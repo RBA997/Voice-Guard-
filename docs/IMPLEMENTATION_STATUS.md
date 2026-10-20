@@ -11,7 +11,7 @@ All three pages of the supplied VoiceGuardAI PDF were reviewed. This checklist s
 | Calibrated thresholds / abstention | Validation-only calibration, empirical error constraints, matching model/window identity; explicit inconclusive result | Calibration and abstention tests pass. No fitted thresholds claimed; uncalibrated demo abstains |
 | Explanation | Spectrogram and window overlay; optional actual occlusion recomputation with score deltas | Real model masked-inference request passed; sensitivity is not causal attribution |
 | Second model / ensemble | Two configurable pinned safetensors models, individual scores, mean window scores, disagreement abstention | Both real models loaded and inferred; sample disagreement correctly abstained. No superiority claim |
-| Optional Arabic fine-tuning | `train_arabic.py`: frozen feature encoder, train/validation separation, random training crops, validation-loss checkpoint selection | One-epoch tiny random-model software test passes. Real Arabic training and before/after gains require data |
+| Optional Arabic fine-tuning | `train_arabic.py` for consented data; separate public head-only adaptation in `train_public_head.py` | Public frozen-encoder head trained on 256 clips / 768 variants; fresh clip-level confirmation accuracy 54.69% to 71.88%. Consented full-model speaker-disjoint study still pending |
 | STRIDE threat model | `docs/THREAT_MODEL.md` | Assets, actors, boundaries, controls and residual risks documented |
 | API abuse tests | `tests/test_api.py` | Empty/large/forged/corrupt/long/repeated requests, consent, busy service, model failure, security headers, no-disk-spooling tested |
 | Security automation | Bandit, pip-audit, Dependabot, SECURITY.md, GitHub Actions | Local scans run; workflow files added. Remote GitHub Actions have not been executed here |
@@ -41,7 +41,7 @@ All three pages of the supplied VoiceGuardAI PDF were reviewed. This checklist s
 
 ## What cannot be finished without data
 
-No consented labeled Arabic dataset was supplied. Therefore final threshold fitting, a consented speaker-independent Arabic study, physical loudspeaker re-recording results, and real fine-tuning gains remain **unrun**. Small public ArAD classifier and digital robustness measurements are recorded separately in `docs/results/README.md`, with their limitations; they do not complete those pending requirements. The implementation and reproducible commands are ready in `docs/RESEARCH.md`; gathering real data cannot be substituted with invented results. Verify Arabic TTS support, model license and speaker consent before generating data. XTTS was a suggestion in the review, not a dependency verified or bundled here.
+No consented labeled Arabic dataset was supplied. Therefore final threshold fitting, a consented speaker-independent Arabic study, physical loudspeaker re-recording results, and consented full-model fine-tuning remain **unrun**. Public ArAD inference and head-only adaptation measurements are recorded separately in `docs/results/README.md` and `docs/results/model-improvement/README.md`, with their limitations; they do not complete those pending requirements. The implementation and reproducible commands are ready in `docs/RESEARCH.md`; gathering real data cannot be substituted with invented results. Verify Arabic TTS support, model license and speaker consent before generating data. XTTS was a suggestion in the review, not a dependency verified or bundled here.
 
 ## Container validation
 
@@ -86,3 +86,22 @@ limitations and reproduction commands are in `docs/results/README.md`. Individua
 consent and speaker groups are absent, so calibration/fine-tuning remain pending.
 45 Python tests passed; the research dependency audit and medium/high scan passed.
 No frontend, application thresholds, or default model configuration changed.
+
+## Experimental public Arabic head adaptation
+
+A predefined XLS-R candidate failed development and was not substituted. A
+separate head-only adaptation used 256 public ArAD training clips with original,
+20 dB noise and MP3 variants. Its frozen-encoder development check passed. On
+256 fresh test clips excluding all previously reviewed recordings, matched
+accuracy increased from 54.69% to 71.88%, fake recall from 36.72% to 61.72%, and
+real recall from 72.66% to 82.03%. All tested digital perturbations improved on
+the predefined 16-clip robustness subset. No consent or speaker independence is
+asserted for the public corpus, and the classifier still missed 49/128 fakes.
+
+The approximately 7 KB numeric head is an opt-in `experimental-arabic` profile;
+the general default, frontend layout and speech gate are preserved. The Windows
+launcher is `start_arabic.bat`. Adapted model checksums enter both calibration
+identity and JSON reports. 58 Python tests passed, then 35 related tests passed
+after final API metadata changes. Real API speech upload, head checksum,
+silence and noise checks passed. See `docs/ARABIC_PROFILE.md` and the complete
+paired evidence in `docs/results/model-improvement/README.md`.

@@ -1,5 +1,10 @@
 # Exploratory Arabic results — 20 October 2026
 
+Follow-up: [a separate trained-head experiment](model-improvement/README.md)
+improved matched accuracy from 54.69% to 71.88% on a **different fresh 256-clip
+subset**. The historical 128-clip results below remain unchanged. For the opt-in
+profile see [Windows instructions](../ARABIC_PROFILE.md).
+
 These are real inference measurements on a small public dataset subset, not
 software-test fixtures and not a completed consented, speaker-disjoint study.
 No audio is redistributed here.

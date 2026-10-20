@@ -12,6 +12,7 @@ class Settings:
     second_model: str = ''
     second_revision: str = ''
     calibration: str = ''
+    head_path: str = ''
     max_bytes: int = 15 * 1024 * 1024
     max_seconds: float = 120
     requests_per_minute: int = 6
@@ -26,12 +27,17 @@ class Settings:
 
     @classmethod
     def from_env(cls):
+        profile = os.getenv('VG_PROFILE', 'base')
+        if profile not in {'base', 'experimental-arabic'}:
+            raise ValueError('VG_PROFILE must be base or experimental-arabic')
         result = cls(
             model_id=os.getenv('VG_MODEL_ID', cls.model_id),
             revision=os.getenv('VG_MODEL_REVISION', cls.revision),
             second_model=os.getenv('VG_SECOND_MODEL', ''),
             second_revision=os.getenv('VG_SECOND_REVISION', ''),
             calibration=os.getenv('VG_CALIBRATION', ''),
+            head_path=os.getenv('VG_HEAD_PATH') or (str(Path(__file__).parent / 'assets' / 'arabic_head.json')
+                                                   if profile == 'experimental-arabic' else ''),
             max_bytes=int(os.getenv('VG_MAX_BYTES', cls.max_bytes)),
             max_seconds=float(os.getenv('VG_MAX_SECONDS', cls.max_seconds)),
             requests_per_minute=int(os.getenv('VG_RATE_LIMIT', cls.requests_per_minute)),

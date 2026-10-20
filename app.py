@@ -36,6 +36,7 @@ class ModelScore(BaseModel):
     id: str
     revision: str
     fake_score: float = Field(ge=0, le=100)
+    head_sha256: str | None = Field(default=None, pattern=r'^[0-9a-f]{64}$')
 
 
 class Analysis(BaseModel):

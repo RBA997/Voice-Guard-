@@ -26,6 +26,20 @@ class Detector:
         self.fake_index = fake_indices[0]
         self.sample_rate = int(self.extractor.sampling_rate)
 
+    def install_head(self, path, model_id, revision):
+        from voiceguard.head import read_head
+        layer = self.model.classifier
+        if not isinstance(layer, self.torch.nn.Linear) or layer.out_features != 2 or layer.bias is None:
+            raise ValueError('Adaptation requires a two-class linear classification head')
+        weights, bias, self.head_sha256 = read_head(path, model_id, revision, layer.in_features, self.fake_index)
+        # Softmax(fake, real) equals sigmoid(w*x+b) when the logits are +/- half.
+        vector = self.torch.tensor(weights, dtype=layer.weight.dtype, device=layer.weight.device)
+        with self.torch.no_grad():
+            layer.weight[self.fake_index].copy_(vector / 2)
+            layer.weight[1 - self.fake_index].copy_(-vector / 2)
+            layer.bias[self.fake_index] = bias / 2
+            layer.bias[1 - self.fake_index] = -bias / 2
+
     def score(self, audio, sample_rate):
         return self.score_many([audio], sample_rate, batch_size=1)[0]
 
@@ -62,6 +76,8 @@ class Engine:
             import torch
             torch.set_num_threads(settings.cpu_threads)
         self.detectors = detectors if detectors is not None else [Detector(settings.model_id, settings.revision)]
+        if settings.head_path:
+            self.detectors[0].install_head(settings.head_path, settings.model_id, settings.revision)
         if detectors is None and settings.second_model:
             self.detectors.append(Detector(settings.second_model, settings.second_revision))
         self.calibration = None
@@ -82,6 +98,8 @@ class Engine:
             [{'id': s.second_model, 'revision': s.second_revision}] if s.second_model else []),
             'window_seconds': s.window_seconds, 'stride_seconds': s.stride_seconds,
             'aggregation': s.aggregation}
+        if s.head_path:
+            identity['models'][0]['head_sha256'] = self.detectors[0].head_sha256
         for model in identity['models']:
             root = Path(model['id'])
             if root.is_dir():
@@ -161,8 +179,7 @@ class Engine:
         return {'prediction': prediction, 'decision_reason': reason, '_raw_fake_score': aggregate,
                 'scores': {'real': round((1 - aggregate) * 100, 2), 'fake': round(aggregate * 100, 2)},
                 'duration': round(len(audio) / s.sample_rate, 3), 'segments': segments,
-                'models': [{'id': identity['id'], 'revision': identity['revision'],
-                            'fake_score': round(score * 100, 2)}
+                'models': [{**identity, 'fake_score': round(score * 100, 2)}
                            for identity, score in zip(self.identity()['models'], individual)],
                 'calibrated': self.calibration is not None, 'disagreement': disagreement,
                 'aggregation': s.aggregation, 'disclaimer': DISCLAIMER}

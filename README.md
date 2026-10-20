@@ -19,6 +19,12 @@ On Windows, create the environment with `py -3.12 -m venv .venv` and activate us
 
 The frontend and API share port 8000. Model initialization runs in the application lifespan; `/health` reports readiness (503 if loading failed). The first start downloads the pinned public model; subsequent starts reuse Hugging Face's cache. Set `HF_HOME` to a writable persistent cache if needed. Keep one worker: the rate/concurrency limits are process-local. For remote use, see [SECURITY.md](SECURITY.md).
 
+### Experimental Arabic profile
+
+An optional small trained classifier reuses the same encoder and frontend. On a fresh 256-clip public ArAD subset, matched accuracy improved from **54.69% to 71.88%**, with better fake recall and digital robustness. These are exploratory clip-level results; new-speaker generalization is unverified. The general profile remains the default.
+
+On an existing Windows installation, stop the old backend and double-click `start_arabic.bat`. See [step-by-step launch instructions](docs/ARABIC_PROFILE.md) and [full evidence and limitations](docs/results/model-improvement/README.md). Other shells can set `VG_PROFILE=experimental-arabic` before starting uvicorn. No extra runtime dependencies are required.
+
 Alternatively, with Docker:
 
 ```bash
@@ -57,7 +63,7 @@ See [the protocol and commands](docs/RESEARCH.md) and [manifest instructions](da
 
 `robustness.py` compares paired MP3 compression, 10/20 dB noise and 8 kHz resampling, and accepts actual loudspeaker re-recordings. `train_arabic.py` optionally fine-tunes on consented Arabic training speakers, selecting by validation loss. The scripts reject missing consent, duplicate content and cross-split speakers.
 
-No labeled dataset was supplied: **Arabic accuracy, final thresholds, physical re-recording outcomes and fine-tuning gains have not been established.** The scripts and tests are implemented; collecting data and running experiments remain separate work. Do not publish software-test fixture metrics as research findings.
+No labeled dataset was supplied by the user. Small public ArAD classifier and digital robustness measurements are available in [the exploratory results](docs/results/README.md), with their limits. **A consented, speaker-independent Arabic study, final thresholds and physical re-recording outcomes remain pending.** Public clip-level results cannot establish performance on new speakers or all Arabic dialects. Do not publish software-test fixture metrics as research findings.
 
 ### Optional second model
 
@@ -69,18 +75,18 @@ export VG_SECOND_REVISION=e4d9874b493362149cec96ced85f00b00b1a04c0
 # Restart the server, then evaluate/calibrate this exact ensemble independently.
 ```
 
-Both individual model scores are visible. Recheck model cards/licenses for your intended use. The models can share training biases; an ensemble is not a guaranteed improvement.
+Both individual model scores are included in the downloadable JSON report. Recheck model cards/licenses for your intended use. The models can share training biases; an ensemble is not a guaranteed improvement.
 
 ## Configuration
 
-Variables in `.env.example` are references; the server reads the process environment and does not implicitly load `.env` files. `VG_MODEL_ID`, `VG_MODEL_REVISION`, `VG_SECOND_MODEL`, `VG_SECOND_REVISION`, `VG_CALIBRATION`, `VG_MAX_BYTES`, `VG_MAX_SECONDS`, `VG_RATE_LIMIT`, `VG_AGGREGATION`, `VG_CPU_THREADS` and `VG_INFERENCE_BATCH_SIZE` configure inference. Normal inference batches up to three equal-length windows and caps CPU threads at four by default (an existing `OMP_NUM_THREADS` setting is respected). Use `VG_INFERENCE_BATCH_SIZE=1` for the serial path or lower peak memory. Keep the explanation checkbox off for the fastest normal analysis; it requires extra masked inference. A second model also adds inference work. Public models need no API key. A calibration must match both model revisions and windowing/aggregation; local model artifacts are hashed as part of calibration identity.
+Variables in `.env.example` are references; the server reads the process environment and does not implicitly load `.env` files. `VG_MODEL_ID`, `VG_MODEL_REVISION`, `VG_SECOND_MODEL`, `VG_SECOND_REVISION`, `VG_CALIBRATION`, `VG_MAX_BYTES`, `VG_MAX_SECONDS`, `VG_RATE_LIMIT`, `VG_AGGREGATION`, `VG_CPU_THREADS` and `VG_INFERENCE_BATCH_SIZE` configure inference. `VG_PROFILE` selects `base` or `experimental-arabic`; `VG_HEAD_PATH` optionally provides a matching JSON classifier. Normal inference batches up to three equal-length windows and caps CPU threads at four by default (an existing `OMP_NUM_THREADS` setting is respected). Use `VG_INFERENCE_BATCH_SIZE=1` for the serial path or lower peak memory. Keep the explanation checkbox off for the fastest normal analysis; it requires extra masked inference. A second model also adds inference work. Public models need no API key. A calibration must match both model revisions, any adapted head checksum, and windowing/aggregation; local model artifacts are hashed as part of calibration identity. JSON reports identify adapted classifiers with `models[].head_sha256`.
 
 ## Validation
 
 ```bash
 python -m pip install -r requirements-dev.txt
 python -m pytest -q
-python -m bandit -r app.py voiceguard evaluate.py robustness.py train_arabic.py -ll
+python -m bandit -r app.py voiceguard evaluate.py robustness.py train_arabic.py public_arabic_benchmark.py compare_arabic_models.py train_public_head.py -ll
 python -m pip_audit --progress-spinner off
 # Also audit the upstream torch version: local +cpu variants are not listed on PyPI.
 python -m pip_audit -r requirements.txt --disable-pip --no-deps --progress-spinner off
