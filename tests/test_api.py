@@ -97,9 +97,23 @@ def test_health_and_security_headers(client):
 
 
 def test_frontend_and_assets(client):
-    for path in ['/', '/script.js', '/style.css', '/logo.svg', '/font.ttf']:
+    for path in ['/', '/script.js', '/style.css', '/enhancements.css', '/new-end.png', '/logo.svg', '/font.ttf']:
         assert client.get(path).status_code == 200
     assert client.get('/../app.py').status_code == 404
+    import re
+    import zipfile
+    from pathlib import Path
+    root=Path(__file__).resolve().parents[1]
+    with zipfile.ZipFile(root/'frontend.zip') as archive:
+        original=archive.read('frontend/frontend/index.html').decode()
+        current=client.get('/').text
+        normalize=lambda text:'\n'.join(line.rstrip() for line in text.splitlines())
+        for tag in ['header','footer']:
+            pattern=rf'<{tag}\b.*?</{tag}>'
+            assert normalize(re.search(pattern,current,re.S).group())==normalize(re.search(pattern,original,re.S).group())
+        assert re.search(r'<section class="hero">.*?</section>',current,re.S).group()==re.search(r'<section class="hero">.*?</section>',original,re.S).group()
+        assert client.get('/style.css').content==archive.read('frontend/frontend/style.css')
+        assert client.get('/new-end.png').content==archive.read('frontend/frontend/new-end.png')
 
 
 def test_model_failure_keeps_ui_available(settings, wav):

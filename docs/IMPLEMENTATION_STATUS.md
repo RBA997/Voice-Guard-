@@ -21,12 +21,12 @@ All three pages of the supplied VoiceGuardAI PDF were reviewed. This checklist s
 | API quality | `/health`, Pydantic response, lifespan loading, structured safe event logging, versioned route | Real health/inference and model-unavailable behavior verified |
 | Privacy | Bounded in-memory parsing and FFmpeg pipes, explicit consent, no audio/filename logs | No-spooling tests include an audio file larger than the default 1 MiB spool threshold |
 | Accessibility | Native visible file input, focus indicators, skip link, live regions, reduced-motion support, keyboard-scrollable table | English and Arabic axe WCAG A/AA scans pass in tested states |
-| Small text / header overlap | Readable text, 40px SVG mark, normal-flow header | Desktop/mobile browser render inspected; no mobile horizontal overflow |
+| Small text / header overlap | Added readable analysis controls; original header and footer restored at user request | Original header, hero, footer, PNG and base CSS preserved; their existing sizing is retained |
 | Arabic/English and RTL | Language switch covers content, guidance and decisions | Browser RTL and mobile checks pass |
 | Drag/drop and microphone | Drop handler, permission-gated MediaRecorder, stop/time/size controls | Real Chromium flow with fake microphone device passes; WebM analyzed by actual API |
 | Client size/duration checks / progress | Local decode check, server-independent checks, real XHR upload progress and indeterminate inference progress | Browser upload and recording checks pass |
 | Downloadable report | JSON includes input SHA-256, timestamp, model identities, scores, windows and limitations | Browser download parsed and checked |
-| Asset optimization / explicit font | Compact local SVG and locally served licensed DejaVu font | No third-party font requests; license bundled |
+| Assets / explicit font | Original PNG logo restored at user request; local font limited to analysis controls | No third-party font requests; license bundled |
 | “What should I do?” guidance | Callback, private family phrase, no money/codes based only on voice | English and Arabic guidance displayed |
 
 ## Local validation record
@@ -46,3 +46,7 @@ No consented labeled Arabic dataset was supplied. Therefore final threshold fitt
 ## Container validation
 
 The Docker image built successfully with TLS and APT signature verification preserved. The cloud builder needed its existing proxy DNS mapping, proxy build arguments and trusted CA supplied through a BuildKit secret. Runtime uses UID 10001. The writable named model-cache directory is owned by that user. A separate read-only, resource-limited container was started with the already-downloaded public model cache; health and real audio inference passed locally. This verifies cached-model runtime, not a new online download in a fresh Compose volume or remote deployment.
+
+## Original design restoration
+
+At the user's request, the original Reaper AI header, hero, footer, PNG logo and base stylesheet were restored. New controls are scoped to the middle analysis panels, and Arabic direction applies only there. Browser checks report three existing footer contrast findings (4.2:1 versus 4.5:1); those exact legacy findings remain visible and documented because the footer must stay unchanged. New accessibility findings still fail checks. Original markup/assets are checked against frontend.zip. Earlier zero-finding screenshots describe the prior redesigned UI, not this restored version.

@@ -101,6 +101,6 @@ See [the PDF implementation checklist and validation record](docs/IMPLEMENTATION
 
 ## Attribution and license
 
-Base model: [garystafford/wav2vec2-deepfake-voice-detector](https://huggingface.co/garystafford/wav2vec2-deepfake-voice-detector), pinned at `c66306024a7ede0be291e9c4558b37634782dc4e`. Optional comparison model: [mo-thecreator/Deepfake-audio-detection](https://huggingface.co/mo-thecreator/Deepfake-audio-detection). Models and datasets retain their own licenses and usage conditions. The locally served DejaVu font's license is in `frontend/FONT-LICENSE.txt`. The new compact SVG replaces the large PNG; `frontend.zip` is retained only as the original archive and is no longer served.
+Base model: [garystafford/wav2vec2-deepfake-voice-detector](https://huggingface.co/garystafford/wav2vec2-deepfake-voice-detector), pinned at `c66306024a7ede0be291e9c4558b37634782dc4e`. Optional comparison model: [mo-thecreator/Deepfake-audio-detection](https://huggingface.co/mo-thecreator/Deepfake-audio-detection). Models and datasets retain their own licenses and usage conditions. The locally served DejaVu font's license is in `frontend/FONT-LICENSE.txt`. The original Reaper AI header, hero, footer, PNG logo and base stylesheet are preserved from `frontend.zip`. New analysis controls use `frontend/enhancements.css` inside the middle panels. The archive itself is not served.
 
 Project code is MIT-licensed; see [LICENSE](LICENSE). Developed as an educational student project by Reaper Team.
