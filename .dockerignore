@@ -1,0 +1,15 @@
+.git
+.env
+__pycache__
+.pytest_cache
+data
+reports
+models
+*.wav
+*.mp3
+frontend.zip
+node_modules
+tests
+docs
+
+.env*
