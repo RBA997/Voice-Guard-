@@ -19,7 +19,8 @@ from starlette.datastructures import UploadFile
 
 from voiceguard.audio import EXTENSIONS, decode_audio, spectrogram
 from voiceguard.config import Settings
-from voiceguard.engine import Engine
+from voiceguard.engine import Engine, DISCLAIMER
+from voiceguard.speech import SpeechDetector
 
 logger = logging.getLogger('voiceguard')
 
@@ -51,6 +52,7 @@ class Analysis(BaseModel):
     aggregation: str
     disclaimer: str
     spectrogram: dict
+    speech_detected: bool = True
 
 
 class RequestLimits:
@@ -98,22 +100,27 @@ class RequestLimits:
         await self.app(scope, receive, secure_send)
 
 
-def create_app(settings=None, engine_factory=Engine):
+def create_app(settings=None, engine_factory=Engine, speech_detector_factory=SpeechDetector):
     settings = settings or Settings.from_env()
 
     @asynccontextmanager
     async def lifespan(application):
         application.state.engine = None
+        application.state.speech_detector = None
         application.state.gate = asyncio.Semaphore(1)
         application.state.requests = defaultdict(deque)
         try:
-            application.state.engine = await run_in_threadpool(engine_factory, settings)
+            engine = await run_in_threadpool(engine_factory, settings)
+            speech_detector = await run_in_threadpool(speech_detector_factory)
+            application.state.engine = engine
+            application.state.speech_detector = speech_detector
             logger.info(json.dumps({'event': 'model_ready', 'api_version': '1.0.0'}))
         except Exception as exc:
             # Do not log request metadata, filenames, audio, or credential-bearing errors.
             logger.error(json.dumps({'event': 'model_unavailable', 'error_type': type(exc).__name__}))
         yield
         application.state.engine = None
+        application.state.speech_detector = None
 
     application = FastAPI(title='VoiceGuardAI API', version='1.0.0', lifespan=lifespan,
                           docs_url=None, redoc_url=None)
@@ -174,9 +181,22 @@ def create_app(settings=None, engine_factory=Engine):
             async with application.state.gate:
                 try:
                     audio = await run_in_threadpool(decode_audio, content, settings.sample_rate, settings.max_seconds)
-                    if explain and len(audio) / settings.sample_rate > settings.max_explain_seconds:
-                        raise HTTPException(422, f'Occlusion explanation is limited to {settings.max_explain_seconds:g} seconds')
-                    result = await run_in_threadpool(application.state.engine.analyze, audio, explain)
+                    speech_detected = await run_in_threadpool(
+                        application.state.speech_detector.contains_speech, audio, settings.sample_rate)
+                    if not speech_detected:
+                        result = {
+                            'prediction': 'inconclusive', 'decision_reason': 'no_speech',
+                            'scores': {}, 'duration': round(len(audio) / settings.sample_rate, 3),
+                            'segments': [], 'models': [], 'speech_detected': False,
+                            'calibrated': application.state.engine.calibration is not None,
+                            'disagreement': False, 'aggregation': settings.aggregation,
+                            'disclaimer': DISCLAIMER,
+                        }
+                    else:
+                        if explain and len(audio) / settings.sample_rate > settings.max_explain_seconds:
+                            raise HTTPException(422, f'Occlusion explanation is limited to {settings.max_explain_seconds:g} seconds')
+                        result = await run_in_threadpool(application.state.engine.analyze, audio, explain)
+                        result['speech_detected'] = True
                     result['spectrogram'] = await run_in_threadpool(spectrogram, audio, settings.sample_rate)
                 except ValueError as exc:
                     raise HTTPException(422, str(exc)) from None

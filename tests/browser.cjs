@@ -3,7 +3,7 @@ const fs=require('fs');
 const path=require('path');
 const output=path.resolve('reports/browser');fs.mkdirSync(output,{recursive:true});
 (async()=>{
- const browser=await chromium.launch({executablePath:process.env.VG_BROWSER_PATH||undefined,headless:true,args:['--no-sandbox','--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']});
+ const browser=await chromium.launch({executablePath:process.env.VG_BROWSER_PATH||undefined,headless:true,args:['--no-sandbox','--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream',`--use-file-for-fake-audio-capture=${path.resolve('sampleA_short.wav')}`]});
  const context=await browser.newContext({acceptDownloads:true,permissions:['microphone']});
  const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
  page.on('console',msg=>{if(msg.type()==='error')errors.push(msg.text());});
@@ -45,6 +45,12 @@ const output=path.resolve('reports/browser');fs.mkdirSync(output,{recursive:true
  const base64=fs.readFileSync(path.resolve('sampleA_short.wav')).toString('base64');
  await page.evaluate(data=>{const transfer=new DataTransfer();transfer.items.add(new File([Uint8Array.from(atob(data),c=>c.charCodeAt(0))],'dropped.wav',{type:'audio/wav'}));document.getElementById('drop').dispatchEvent(new DragEvent('drop',{dataTransfer:transfer,bubbles:true,cancelable:true}));},base64);
  await page.waitForFunction(()=>document.getElementById('selected').textContent.includes('dropped.wav'));
- console.log('Browser upload, result, report, RTL/mobile, microphone and drop checks passed; original footer contrast findings retained');
+ await page.locator('#language').click();
+ await page.evaluate(()=>{const samples=48000,buffer=new ArrayBuffer(44+samples*2),view=new DataView(buffer);const text=(offset,value)=>{for(let i=0;i<value.length;i++)view.setUint8(offset+i,value.charCodeAt(i));};text(0,'RIFF');view.setUint32(4,36+samples*2,true);text(8,'WAVE');text(12,'fmt ');view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,1,true);view.setUint32(24,16000,true);view.setUint32(28,32000,true);view.setUint16(32,2,true);view.setUint16(34,16,true);text(36,'data');view.setUint32(40,samples*2,true);const transfer=new DataTransfer();transfer.items.add(new File([buffer],'silence.wav',{type:'audio/wav'}));document.getElementById('file').files=transfer.files;document.getElementById('file').dispatchEvent(new Event('change',{bubbles:true}));});
+ await page.waitForFunction(()=>!document.getElementById('analyze').disabled);await page.locator('#analyze').click();
+ await page.waitForFunction(()=>document.getElementById('verdict').textContent==='NO SPEECH DETECTED');
+ if(await page.locator('#score').textContent()!=='--%'||await page.locator('#reportDetails').isVisible())throw Error('No-speech input must not display a score or old analysis');
+ await page.locator('#language').click();if(await page.locator('#verdict').textContent()!=='لم يتم اكتشاف كلام')throw Error('No-speech translation missing');
+ console.log('Browser upload, result, report, RTL/mobile, voiced microphone, drop and no-speech feedback checks passed; original footer contrast findings retained');
  await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});

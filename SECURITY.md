@@ -7,7 +7,7 @@ Report vulnerabilities privately through GitHub's **Report a vulnerability** fea
 - Same-origin frontend/API; no permissive CORS. Restrictive CSP, `nosniff`, no-referrer, no-store, frame restrictions, microphone-only permission policy.
 - Bounded request body, one file, bounded decoded duration, FFmpeg network protocols disabled, decode timeout and one concurrent inference. Per-direct-peer rate limits bound repeated requests; no audio filenames or content are logged.
 - Uploads stay in memory, including multipart parsing. The browser requests consent. The application retains neither audio nor result reports; reports download only at the user's request. Model cache and aggregate server event logs are separate from audio.
-- Model revisions pinned, no remote code, safetensors required. Calibration must match the configured model revisions and analysis settings.
+- Deepfake model revisions pinned, no remote code, safetensors required. The separate speech gate uses a bundled, fixed-path Silero TorchScript model verified against its pinned SHA-256 before loading; uploaded files are never loaded as model artifacts. Its recurrent state and audio context are reset after every recording. Calibration must match the configured model revisions and analysis settings.
 - Container runs as a non-root user with a single exposed service; Compose adds a read-only root filesystem, resource limits, and dropped capabilities.
 - CI runs tests, Bandit and dependency auditing. Dependabot proposes updates; review and test them rather than blindly merging.
 

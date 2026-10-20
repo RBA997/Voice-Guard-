@@ -7,7 +7,7 @@ import soundfile as sf
 from fastapi.testclient import TestClient
 from app import create_app
 from voiceguard.engine import Engine
-from conftest import FakeDetector
+from conftest import FakeDetector, FakeSpeechDetector
 
 
 def post(client, payload, name='sample.wav', **kwargs):
@@ -78,7 +78,7 @@ def test_no_disk_spooling(client, wav, monkeypatch):
 
 def test_repeated_requests(settings, wav):
     settings = replace(settings, requests_per_minute=2)
-    with TestClient(create_app(settings, lambda s: Engine(s, [FakeDetector()]))) as client:
+    with TestClient(create_app(settings, lambda s: Engine(s, [FakeDetector()]), speech_detector_factory=FakeSpeechDetector)) as client:
         assert post(client, wav()).status_code == 200
         assert post(client, wav()).status_code == 200
         response = post(client, wav())
@@ -147,7 +147,7 @@ def test_busy_rejected(settings, wav):
             if not release.wait(10):
                 raise RuntimeError('test synchronization timed out')
             return super().score(audio, sample_rate)
-    with TestClient(create_app(settings, lambda s: Engine(s, [SlowDetector()]))) as client:
+    with TestClient(create_app(settings, lambda s: Engine(s, [SlowDetector()]), speech_detector_factory=FakeSpeechDetector)) as client:
         with ThreadPoolExecutor() as pool:
             first = pool.submit(post, client, wav())
             try:
@@ -166,5 +166,5 @@ def test_large_audio_never_rolls_to_disk(wav, monkeypatch):
     assert len(payload)>1024*1024
     def fail(*args,**kwargs):raise AssertionError('Audio must remain in memory beyond default spool threshold')
     monkeypatch.setattr(SpooledTemporaryFile,'rollover',fail)
-    with TestClient(create_app(settings,lambda s:Engine(s,[FakeDetector()]))) as client:
+    with TestClient(create_app(settings,lambda s:Engine(s,[FakeDetector()]),speech_detector_factory=FakeSpeechDetector)) as client:
         assert post(client,payload).status_code==200

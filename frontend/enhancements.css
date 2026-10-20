@@ -30,3 +30,5 @@
 
 .analysis-tools #results[data-prediction="inconclusive"]{--prediction-color:#ffa500}
 .analysis-tools .meter-labels{font-size:11px;color:#bdc9df}
+
+.analysis-tools #results[data-prediction="no_speech"]{--prediction-color:#ffa500}

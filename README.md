@@ -30,12 +30,14 @@ Compose uses a non-root, resource-limited container, one local port and a persis
 ## Use
 
 1. Confirm permission and processing consent; choose, drag/drop or record audio.
-2. The browser checks size and duration. The server independently enforces limits, decodes the actual audio container and bounds concurrency and request rate.
+2. The browser checks size and duration. The server independently enforces limits, decodes the actual audio container and bounds concurrency and request rate. A bundled speech detector checks for at least 250 ms of consecutive speech first. When no speech is detected, the page asks you to record someone speaking; the classifier is not run and no real/fake percentage is returned.
 3. Analyze: 5-second windows with a 2.5-second stride, including the tail, produce a timeline and aggregate score (`mean` by default; `max` is configurable). Short recordings use one window.
 4. Optional occlusion (up to 30 seconds) replaces each interval with silence and recomputes all affected overlapping windows. Its score change is shown in the table. The spectrogram is a signal visualization, not proof of explainability or manipulation.
 5. Download a JSON report with SHA-256 of the original uploaded bytes, model identities, scores, windows, disclaimer and timestamp. Reports keep the separate `model_prediction` (raw higher-scoring class) and `prediction` (calibration/abstention decision) fields. The app does not retain uploads or reports. Treat hashes as potentially sensitive metadata.
 
-Supported containers: WAV, MP3, FLAC, OGG, M4A, WebM. Defaults: 15 MiB, 120 seconds, six analysis requests/minute per direct peer, one inference at a time. Microphone recording needs a secure browser context (HTTPS or local development) and permission.
+Supported containers: WAV, MP3, FLAC, OGG, M4A, WebM. Defaults: 15 MiB, 120 seconds, six analysis requests/minute per direct peer, one inference at a time. Speech detection is imperfect: quiet or heavily distorted speech may be missed, and some non-speech sounds may resemble speech. Retry with clear speech if needed. This API gate is separate from the raw classifier used by research CLI workflows.
+
+Microphone recording needs a secure browser context (HTTPS or local development) and permission.
 
 ### API
 
@@ -104,3 +106,5 @@ See [the PDF implementation checklist and validation record](docs/IMPLEMENTATION
 Base model: [garystafford/wav2vec2-deepfake-voice-detector](https://huggingface.co/garystafford/wav2vec2-deepfake-voice-detector), pinned at `c66306024a7ede0be291e9c4558b37634782dc4e`. Optional comparison model: [mo-thecreator/Deepfake-audio-detection](https://huggingface.co/mo-thecreator/Deepfake-audio-detection). Models and datasets retain their own licenses and usage conditions. The locally served DejaVu font's license is in `frontend/FONT-LICENSE.txt`. The original Reaper AI header, hero, footer, PNG logo and base stylesheet are preserved from `frontend.zip`. New analysis controls use `frontend/enhancements.css` inside the middle panels. The archive itself is not served.
 
 Project code is MIT-licensed; see [LICENSE](LICENSE). Developed as an educational student project by Reaper Team.
+
+Speech detection uses the bundled Silero VAD TorchScript model from the official `silero-vad` 6.2.3 PyPI wheel. The wheel SHA-256 was verified before extracting the model; model provenance and the MIT license are in `voiceguard/assets/`. The model checksum is checked before loading. It reuses installed PyTorch and requires no extra runtime download or new package.

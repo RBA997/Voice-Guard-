@@ -14,6 +14,11 @@ class FakeDetector:
         return float(np.clip(np.mean(np.abs(audio)) * 2, 0, 1))
 
 
+class FakeSpeechDetector:
+    """Accept synthetic tone fixtures when testing unrelated API behavior."""
+    def contains_speech(self, audio, sample_rate=16000): return True
+
+
 @pytest.fixture
 def settings():
     return Settings(max_bytes=32000, max_seconds=2, requests_per_minute=100)
@@ -21,7 +26,7 @@ def settings():
 
 @pytest.fixture
 def client(settings):
-    with TestClient(create_app(settings, lambda s: Engine(s, [FakeDetector()]))) as client:
+    with TestClient(create_app(settings, lambda s: Engine(s, [FakeDetector()]), speech_detector_factory=FakeSpeechDetector)) as client:
         yield client
 
 
