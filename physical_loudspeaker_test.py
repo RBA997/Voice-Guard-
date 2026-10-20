@@ -9,6 +9,7 @@ import hashlib
 import html
 import io
 import json
+import re
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -122,7 +123,11 @@ def align_recording(original, recorded):
     return recorded[start:start + length].astype(np.float32), start, similarity
 
 
-def evaluate(folder, plan):
+def evaluate(folder, plan, report_name='physical-report.json'):
+    if not re.fullmatch(r'[A-Za-z0-9_-]+\.json', report_name):
+        raise ValueError('Report name must be a simple JSON filename')
+    if report_name != 'physical-report.json' and (folder / report_name).exists():
+        raise ValueError('Preserve the previous candidate report before rerunning')
     allowed = {'.wav', '.m4a', '.mp3', '.webm', '.ogg', '.flac'}
     # Fail before loading the large model when phone files have not been supplied.
     for clip in plan['clips']:
@@ -174,11 +179,12 @@ def evaluate(folder, plan):
               'recording_permission': 'user-confirmed for newly captured files',
               'source_speaker_consent': 'unverified', 'source_license': plan['license'],
               'source_dataset': plan['dataset'], 'source_revision': plan['revision'],
-              'identity': engine.identity(), 'conditions': conditions, 'pairs': pairs,
+              'identity': engine.identity(), 'calibration_applied': engine.calibration is not None,
+              'conditions': conditions, 'pairs': pairs,
               'mean_absolute_score_change': float(np.mean(np.abs(changes))),
               'mean_signed_score_change': float(np.mean(changes)),
-              'note': '8 public pairs; unknown speaker independence. Raw classifier metrics precede the speech gate. No claim for other devices/rooms.'}
-    path = folder / 'physical-report.json'
+              'note': f'{len(pairs)} public pairs; unknown speaker independence. Raw classifier metrics precede the speech gate. No claim for other devices/rooms.'}
+    path = folder / report_name
     path.write_text(json.dumps(report, indent=2, allow_nan=False) + '\n', encoding='utf-8')
     print('Report saved locally: ' + str(path), flush=True)
 
@@ -189,6 +195,7 @@ def main():
     p.add_argument('--folder', default='physical-test')
     p.add_argument('--confirm-recording-permission', action='store_true')
     p.add_argument('--confirm-physical-capture', action='store_true')
+    p.add_argument('--report-name', default='physical-report.json', help='Separate JSON filename for candidate comparisons')
     args = p.parse_args()
     if args.stage == 'evaluate' and not (args.confirm_recording_permission and args.confirm_physical_capture):
         p.error('Evaluation requires permission for your recordings AND actual speaker/microphone capture')
@@ -197,7 +204,7 @@ def main():
     if args.stage == 'prepare':
         prepare(folder, plan)
     else:
-        evaluate(folder, plan)
+        evaluate(folder, plan, args.report_name)
 
 
 if __name__ == '__main__':

@@ -167,3 +167,15 @@ calibrated-decision checks passed. A real-model API smoke check confirmed matchi
 head/calibration identity, calibrated abstention and silence rejection. Bandit
 reported no medium/high findings for the new scripts. Latest commit CI/container
 verification is reported separately when completed.
+
+
+## User-run physical pilot and channel improvement experiment
+
+The uploaded eight-pair report completes the initial physical pilot (user-attested
+capture, unknown source speaker independence). Original raw accuracy was 7/8;
+phone-capture raw accuracy was 4/8, with 0/4 fake detections at the 0.5 cutoff.
+Calibrated phone decisions were six real (including three fake errors), two
+inconclusive. This demonstrates failure on the tested setup, not robustness.
+Earlier pending-physical statements describe the state before this report.
+See [methods, improvement protocol and deployment limits](ROBUSTNESS_IMPROVEMENT.md).
+The existing app classifier/calibration remain unchanged during candidate research.
