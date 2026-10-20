@@ -17,6 +17,8 @@ const output=path.resolve('reports/browser');fs.mkdirSync(output,{recursive:true
  if(!(await page.evaluate(()=>document.fonts.check('16px VoiceGuard')&&document.querySelector('.logo-image').currentSrc.endsWith('new-end.webp')&&parseFloat(getComputedStyle(document.querySelector('.logo-text small')).fontSize)>=12)))throw Error('Optimized assets or readable tagline missing');
  for(let i=0;i<20;i++){await page.keyboard.press('Tab');if(await page.evaluate(()=>document.activeElement.id==='file'))break;}
  if(!(await page.evaluate(()=>document.activeElement.id==='file'&&getComputedStyle(document.activeElement).outlineStyle==='solid')))throw Error('File input must be keyboard reachable with visible focus');
+ await page.locator('#file').scrollIntoViewIfNeeded();
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
  const chooserPromise=page.waitForEvent('filechooser');await page.keyboard.press('Enter');await(await chooserPromise).setFiles(path.resolve('sampleA_short.wav'));
  await page.emulateMedia({reducedMotion:'reduce'});await page.locator('.logo').hover();
  if(!(await page.evaluate(()=>getComputedStyle(document.documentElement).scrollBehavior==='auto'&&getComputedStyle(document.querySelector('.logo')).transitionDuration==='0s'&&getComputedStyle(document.querySelector('.logo')).transform==='none'&&document.querySelector('.verdict-card').getAttribute('aria-live')==='polite'&&document.querySelector('.verdict-card').getAttribute('aria-atomic')==='true')))throw Error('Reduced motion or result announcements missing');
