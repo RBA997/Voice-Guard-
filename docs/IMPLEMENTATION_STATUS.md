@@ -21,12 +21,12 @@ All three pages of the supplied VoiceGuardAI PDF were reviewed. This checklist s
 | API quality | `/health`, Pydantic response, lifespan loading, structured safe event logging, versioned route | Real health/inference and model-unavailable behavior verified |
 | Privacy | Bounded in-memory parsing and FFmpeg pipes, explicit consent, no audio/filename logs | No-spooling tests include an audio file larger than the default 1 MiB spool threshold |
 | Accessibility | Native visible file input, focus indicators, skip link, live regions, reduced-motion support, keyboard-scrollable table | English and Arabic axe WCAG A/AA scans pass in tested states |
-| Small text / header overlap | Added readable analysis controls; original header and footer restored at user request | Original header, hero, footer, PNG and base CSS preserved; their existing sizing is retained |
+| Small text / header overlap | Header tagline increased to 12 px; content offset tracks actual fixed-header height | Original logo dimensions, branding and colors preserved; navigation can wrap without covering content |
 | Arabic/English and RTL | Language switch covers content, guidance and decisions | Browser RTL and mobile checks pass |
 | Drag/drop and microphone | Drop handler, permission-gated MediaRecorder, stop/time/size controls | Real Chromium flow with fake microphone device passes; WebM analyzed by actual API |
 | Client size/duration checks / progress | Local decode check, server-independent checks, real XHR upload progress and indeterminate inference progress | Browser upload and recording checks pass |
 | Downloadable report | JSON includes input SHA-256, timestamp, model identities, scores, windows and limitations | Browser download parsed and checked |
-| Assets / explicit font | Original PNG logo restored at user request; local font limited to analysis controls | No third-party font requests; license bundled |
+| Assets / explicit font | Same logo served as lossless WebP; preloaded local WOFF2 font applied across the page | Logo 40.4% smaller; font 66.0% smaller. Pixels/transparency and all 5,918 font mappings preserved; no third-party font requests |
 | “What should I do?” guidance | Callback, private family phrase, no money/codes based only on voice | English and Arabic guidance displayed |
 
 ## Local validation record
@@ -105,3 +105,38 @@ identity and JSON reports. 58 Python tests passed, then 35 related tests passed
 after final API metadata changes. Real API speech upload, head checksum,
 silence and noise checks passed. See `docs/ARABIC_PROFILE.md` and the complete
 paired evidence in `docs/results/model-improvement/README.md`.
+
+## Logo and font optimization
+
+At the user's request the existing PNG logo was losslessly encoded as WebP,
+without resizing or redrawing. It decreased from 759,903 to 453,078 bytes;
+decoded RGBA pixels, transparency and dimensions are identical. The logo and
+favicon now request `new-end.webp`. The local DejaVu Sans font was compressed
+from 759,720-byte TTF to 258,324-byte WOFF2, preserving all 5,918 character
+mappings and shaping tables, including Arabic. It is preloaded and explicitly
+applied across the page with `font-display: swap`; the license remains bundled.
+Original source assets remain available for reference but are not requested by
+the current page. The layout, colors and original base stylesheet are preserved.
+
+The asset API check and real browser upload/report, microphone, drag/drop,
+English/Arabic, mobile and no-speech flows passed. The browser confirmed WOFF2
+font loading, WebP logo loading, and no PNG/TTF requests. The three existing
+footer contrast findings remain; no new tested accessibility findings appeared.
+
+## Accessibility and fixed-header follow-up
+
+The native upload input remains keyboard accessible. Visible focus styling now
+covers header/footer links as well as analysis controls. The result card has a
+polite, atomic status live region, announcing the outcome and its description.
+Reduced-motion preferences now disable transitions, animations and smooth
+scrolling across the whole page, including hover movement on links/buttons.
+The header tagline is 12 px instead of 9/8 px. A ResizeObserver measures the
+actual fixed header after font loading and viewport changes; body spacing and
+anchor scroll clearance follow its height. Narrow navigation can wrap safely.
+
+Browser checks passed at 320, 390, 768 and 1280 px with no header overlap or
+horizontal overflow. Keyboard Tab plus Enter opened the native file chooser,
+with a visible focus outline. Reduced-motion styles and live-region semantics
+were checked. English/Arabic axe checks, microphone, upload, reports, drop and
+no-speech flows passed; the three known footer contrast findings remain. These
+automated checks are not a complete manual screen-reader certification.

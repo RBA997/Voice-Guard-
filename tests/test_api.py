@@ -97,7 +97,7 @@ def test_health_and_security_headers(client):
 
 
 def test_frontend_and_assets(client):
-    for path in ['/', '/script.js', '/style.css', '/enhancements.css', '/new-end.png', '/logo.svg', '/font.ttf']:
+    for path in ['/', '/script.js', '/style.css', '/enhancements.css', '/new-end.png', '/new-end.webp', '/logo.svg', '/font.ttf', '/font.woff2']:
         assert client.get(path).status_code == 200
     assert client.get('/../app.py').status_code == 404
     import re
@@ -107,7 +107,8 @@ def test_frontend_and_assets(client):
     with zipfile.ZipFile(root/'frontend.zip') as archive:
         original=archive.read('frontend/frontend/index.html').decode()
         current=client.get('/').text
-        normalize=lambda text:'\n'.join(line.rstrip() for line in text.splitlines())
+        # Only the logo encoding changes in the original header markup.
+        normalize=lambda text:'\n'.join(line.rstrip() for line in text.replace('./new-end.webp','./new-end.png').splitlines())
         for tag in ['header','footer']:
             pattern=rf'<{tag}\b.*?</{tag}>'
             assert normalize(re.search(pattern,current,re.S).group())==normalize(re.search(pattern,original,re.S).group())

@@ -114,3 +114,5 @@ Base model: [garystafford/wav2vec2-deepfake-voice-detector](https://huggingface.
 Project code is MIT-licensed; see [LICENSE](LICENSE). Developed as an educational student project by Reaper Team.
 
 Speech detection uses the bundled Silero VAD TorchScript model from the official `silero-vad` 6.2.3 PyPI wheel. The wheel SHA-256 was verified before extracting the model; model provenance and the MIT license are in `voiceguard/assets/`. The model checksum is checked before loading. It reuses installed PyTorch and requires no extra runtime download or new package.
+
+The original logo is served as pixel-identical lossless WebP (40.4% smaller than its PNG source). DejaVu Sans is explicitly loaded locally as preloaded WOFF2 (66.0% smaller than the TTF source), with Arabic mappings retained and `font-display: swap`. Its license is bundled. Source PNG/TTF files remain for reference; the current page requests only the optimized assets. Font and image conversions require no new runtime packages.

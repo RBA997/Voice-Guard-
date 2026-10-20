@@ -8,6 +8,19 @@ const output=path.resolve('reports/browser');fs.mkdirSync(output,{recursive:true
  const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
  page.on('console',msg=>{if(msg.type()==='error')errors.push(msg.text());});
  await page.goto(process.env.VG_BASE_URL||'http://127.0.0.1:8000');await page.waitForFunction(()=>document.getElementById('health').textContent==='Detector ready');
+ await page.evaluate(()=>document.fonts.ready);
+ for(const width of [320,390,768,1280]){
+  await page.setViewportSize({width,height:900});
+  await page.waitForFunction(()=>parseFloat(getComputedStyle(document.body).paddingTop)>=document.querySelector('.navbar').getBoundingClientRect().height);
+  if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth||document.querySelector('.dashboard').getBoundingClientRect().top<document.querySelector('.navbar').getBoundingClientRect().bottom))throw Error('Header overlap or narrow-screen overflow');
+ }
+ if(!(await page.evaluate(()=>document.fonts.check('16px VoiceGuard')&&document.querySelector('.logo-image').currentSrc.endsWith('new-end.webp')&&parseFloat(getComputedStyle(document.querySelector('.logo-text small')).fontSize)>=12)))throw Error('Optimized assets or readable tagline missing');
+ for(let i=0;i<20;i++){await page.keyboard.press('Tab');if(await page.evaluate(()=>document.activeElement.id==='file'))break;}
+ if(!(await page.evaluate(()=>document.activeElement.id==='file'&&getComputedStyle(document.activeElement).outlineStyle==='solid')))throw Error('File input must be keyboard reachable with visible focus');
+ const chooserPromise=page.waitForEvent('filechooser');await page.keyboard.press('Enter');await(await chooserPromise).setFiles(path.resolve('sampleA_short.wav'));
+ await page.emulateMedia({reducedMotion:'reduce'});await page.locator('.logo').hover();
+ if(!(await page.evaluate(()=>getComputedStyle(document.documentElement).scrollBehavior==='auto'&&getComputedStyle(document.querySelector('.logo')).transitionDuration==='0s'&&getComputedStyle(document.querySelector('.logo')).transform==='none'&&document.querySelector('.verdict-card').getAttribute('aria-live')==='polite'&&document.querySelector('.verdict-card').getAttribute('aria-atomic')==='true')))throw Error('Reduced motion or result announcements missing');
+ await page.emulateMedia({reducedMotion:'no-preference'});
  await page.evaluate(require('fs').readFileSync(require.resolve('axe-core'),'utf8'));
  const axe=await page.evaluate(async()=>await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}}));
  console.log('Axe violations',axe.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>n.target)})));
