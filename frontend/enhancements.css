@@ -11,9 +11,9 @@
 .analysis-tools .drop label{display:block;font-size:20px;font-weight:700;margin:8px 0 15px}.analysis-tools .drop input{max-width:100%;color:#bdc9df}.analysis-tools .drop input::file-selector-button{font:inherit;background:#172347;color:#dde3ff;border:1px solid #5969a2;border-radius:5px;padding:10px 16px;margin-inline-end:10px;cursor:pointer}.analysis-tools .drop.active{border-color:#35df91;background:#131c38}
 .analysis-tools .actions{display:flex;gap:12px;margin-top:20px}.analysis-tools .actions button{flex:1;width:auto}
 .analysis-tools audio,.analysis-tools progress{width:100%;display:block;margin:16px 0}.analysis-tools progress{height:16px;accent-color:#818cf8}
-.analysis-tools #selected,.analysis-tools #status,.analysis-tools #models p{overflow-wrap:anywhere}.analysis-tools #status{white-space:pre-wrap}
+.analysis-tools #selected,.analysis-tools #status{overflow-wrap:anywhere}.analysis-tools #status{white-space:pre-wrap}
 .analysis-tools #health{border-inline-start:3px solid #818cf8;padding-inline-start:12px}
-.analysis-tools .gauge{position:relative}.analysis-tools #scoreGauge{position:absolute;width:100%;height:100%;border:0;border-radius:50%;background:none}.analysis-tools .gauge-inner{z-index:1}.analysis-tools .gauge-inner span{font-size:11px;max-width:115px;line-height:1.4}.analysis-tools #scoreMeter{display:block;width:100%;height:7px}.analysis-tools .verdict-card h2{color:#a5b4fc}
+.analysis-tools #scoreMeter{display:block;width:100%;height:7px}.analysis-tools .verdict-card h2{color:#a5b4fc}
 .analysis-tools #reportDetails{margin-top:28px}.analysis-tools #timeline,.analysis-tools #spectrum{width:100%;display:block;background:#0c1429;border:1px solid #263454;border-radius:8px}
 .analysis-tools .table-wrap{overflow:auto;max-height:290px;margin:16px 0 30px}.analysis-tools table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}.analysis-tools th,.analysis-tools td{text-align:start;border-bottom:1px solid #263454;padding:9px}.analysis-tools caption{text-align:start;color:#bdc9df}
 .analysis-tools #disclaimer{font-size:14px}.analysis-tools .advice li{margin:12px 0}
@@ -27,3 +27,5 @@
 .analysis-tools #results[data-prediction="fake"]{--prediction-color:#ff454f}
 .analysis-tools #results[data-prediction="real"]{--prediction-color:#35df91}
 .analysis-tools #results .verdict-card h2,.analysis-tools #results .signal{color:var(--prediction-color)}
+
+.analysis-tools .prediction-layout{grid-template-columns:minmax(0,1fr)}

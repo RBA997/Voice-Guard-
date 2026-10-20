@@ -21,6 +21,7 @@ const output=path.resolve('reports/browser');fs.mkdirSync(output,{recursive:true
  await page.locator('#file').setInputFiles(path.resolve('sampleA_short.wav'));
  await page.waitForFunction(()=>!document.getElementById('analyze').disabled);
  await page.locator('#analyze').click();await page.waitForFunction(()=>document.getElementById('status').textContent==='Analysis complete.',{timeout:120000});
+ if(await page.locator('#scoreGauge, #score, #models').count()!==0)throw Error('Removed score circle or model names are still displayed');
  if(await page.locator('#segments tr').count()!==3)throw Error('Expected three windows');
  const downloadPromise=page.waitForEvent('download');await page.locator('#download').click();const download=await downloadPromise;
  const file=await download.path();const data=JSON.parse(fs.readFileSync(file,'utf8'));if(!data.sha256||data.prediction!=='inconclusive')throw Error('Bad calibration report');

@@ -54,3 +54,7 @@ At the user's request, the original Reaper AI header, hero, footer, PNG logo and
 ## Model label and checkbox placement
 
 At the user's request, the main card now displays REAL AUDIO DETECTED or FAKE AUDIO DETECTED for the higher-scoring class, explicitly labeled MODEL PREDICTION. A short note explains calibration limitations or model disagreement; silence and exact ties still abstain. Downloaded reports include `model_prediction` separately from the unchanged API calibration/abstention `prediction`. Consent and optional explanation checkboxes are stacked directly above Analyze. The original header, hero and footer remain preserved.
+
+## Simplified result card
+
+At the user's request, the circular percentage display and model-name score list are removed from the page. The result card, status dot, panel border and horizontal line are red for fake, green for real and blue for inconclusive. Model details and scores remain in the downloaded report. Header, footer and stacked checkbox placement are preserved.
