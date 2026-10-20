@@ -57,4 +57,6 @@ At the user's request, the main card now displays REAL AUDIO DETECTED or FAKE AU
 
 ## Simplified result card
 
-At the user's request, the circular percentage display and model-name score list are removed from the page. The result card, status dot, panel border and horizontal line are red for fake, green for real and blue for inconclusive. Model details and scores remain in the downloaded report. Header, footer and stacked checkbox placement are preserved.
+At the user's request, the circular percentage display is kept and only the model-name score list is removed from the page. The circle, result text, status dot, panel border and horizontal line are red for fake, green for real and blue for inconclusive. Model details and scores remain in the downloaded report. Header, footer and stacked checkbox placement are preserved.
+
+The retained circle is labeled AI CONFIDENCE, with Model confidence score beneath it. Its percentage and arc show the higher-scoring predicted class (real or fake); the horizontal line still tracks the fake-class score. Silence or tied scores display no confidence percentage.

@@ -21,12 +21,14 @@ const output=path.resolve('reports/browser');fs.mkdirSync(output,{recursive:true
  await page.locator('#file').setInputFiles(path.resolve('sampleA_short.wav'));
  await page.waitForFunction(()=>!document.getElementById('analyze').disabled);
  await page.locator('#analyze').click();await page.waitForFunction(()=>document.getElementById('status').textContent==='Analysis complete.',{timeout:120000});
- if(await page.locator('#scoreGauge, #score, #models').count()!==0)throw Error('Removed score circle or model names are still displayed');
+ if(await page.locator('#scoreGauge').count()!==1||await page.locator('#score').count()!==1||await page.locator('#models').count()!==0)throw Error('Keep the circular score and remove only model-name scores');
  if(await page.locator('#segments tr').count()!==3)throw Error('Expected three windows');
  const downloadPromise=page.waitForEvent('download');await page.locator('#download').click();const download=await downloadPromise;
  const file=await download.path();const data=JSON.parse(fs.readFileSync(file,'utf8'));if(!data.sha256||data.prediction!=='inconclusive')throw Error('Bad calibration report');
  const predicted=data.scores.fake>data.scores.real?'fake':'real';
  if(data.model_prediction!==predicted)throw Error('Missing raw model prediction');
+ if(await page.locator('#score').textContent()!==`${data.scores[predicted].toFixed(2)}%`)throw Error('Circle must show the predicted class confidence');
+ if(await page.locator('[data-i18n=aiConfidence]').textContent()!=='AI CONFIDENCE')throw Error('Incorrect circle wording');
  if(await page.locator('#verdict').textContent()!==(predicted==='fake'?'FAKE AUDIO DETECTED':'REAL AUDIO DETECTED'))throw Error('Model prediction heading does not match scores');
  await page.screenshot({path:path.join(output,'desktop.png'),fullPage:true});
  await page.locator('#language').click();if(await page.locator('#analysis').getAttribute('dir')!=='rtl')throw Error('RTL failed');
