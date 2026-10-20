@@ -71,7 +71,7 @@ Both individual model scores are visible. Recheck model cards/licenses for your 
 
 ## Configuration
 
-Variables in `.env.example` are references; the server reads the process environment and does not implicitly load `.env` files. `VG_MODEL_ID`, `VG_MODEL_REVISION`, `VG_SECOND_MODEL`, `VG_SECOND_REVISION`, `VG_CALIBRATION`, `VG_MAX_BYTES`, `VG_MAX_SECONDS`, `VG_RATE_LIMIT` and `VG_AGGREGATION` configure inference. Public models need no API key. A calibration must match both model revisions and windowing/aggregation; local model artifacts are hashed as part of calibration identity.
+Variables in `.env.example` are references; the server reads the process environment and does not implicitly load `.env` files. `VG_MODEL_ID`, `VG_MODEL_REVISION`, `VG_SECOND_MODEL`, `VG_SECOND_REVISION`, `VG_CALIBRATION`, `VG_MAX_BYTES`, `VG_MAX_SECONDS`, `VG_RATE_LIMIT`, `VG_AGGREGATION`, `VG_CPU_THREADS` and `VG_INFERENCE_BATCH_SIZE` configure inference. Normal inference batches up to three equal-length windows and caps CPU threads at four by default (an existing `OMP_NUM_THREADS` setting is respected). Use `VG_INFERENCE_BATCH_SIZE=1` for the serial path or lower peak memory. Keep the explanation checkbox off for the fastest normal analysis; it requires extra masked inference. A second model also adds inference work. Public models need no API key. A calibration must match both model revisions and windowing/aggregation; local model artifacts are hashed as part of calibration identity.
 
 ## Validation
 

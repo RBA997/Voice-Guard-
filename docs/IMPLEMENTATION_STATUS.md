@@ -57,6 +57,12 @@ At the user's request, the main card now displays REAL AUDIO DETECTED or FAKE AU
 
 ## Simplified result card
 
-At the user's request, the circular percentage display is kept and only the model-name score list is removed from the page. The circle, result text, status dot, panel border and horizontal line are red for fake, green for real and blue for inconclusive. Model details and scores remain in the downloaded report. Header, footer and stacked checkbox placement are preserved.
+At the user's request, the circular percentage display is kept and only the model-name score list is removed from the page. The circle, result text, status dot, panel border and horizontal line are red for fake, green for real and orange for inconclusive. Model details and scores remain in the downloaded report. Header, footer and stacked checkbox placement are preserved.
 
 The retained circle is labeled AI CONFIDENCE, with Model confidence score beneath it. Its percentage and arc show the higher-scoring predicted class (real or fake); the horizontal line still tracks the fake-class score. Silence or tied scores display no confidence percentage.
+
+## Faster inference and original result wording
+
+Normal inference now batches up to three equal-length windows without dropping any window or changing aggregation. CPU threads default to at most four, respecting an existing OMP_NUM_THREADS value; VG_CPU_THREADS and VG_INFERENCE_BATCH_SIZE can override those settings. Explanation still performs the actual masked-window computation and remains optional; its masked windows use the serial path because batching did not improve measured CPU latency. The result card matches the original THREAT ASSESSMENT heading and real/fake classification sentence, with LOW / MEDIUM / HIGH line labels. Uncertain results use orange; fake remains red and real green. Display colors indicate the predicted category, not newly fitted validation thresholds.
+
+Cloud timing on the included 10-second sample: warm normal inference was approximately 3.3–3.4 seconds with four CPU threads; optional occlusion required roughly 11–12 seconds. Cold/warm timings varied substantially, so no fixed laptop speedup is promised. Batched and serial scores matched to displayed precision, including occlusion deltas. Peak RSS in the benchmark was about 2.1 GiB.

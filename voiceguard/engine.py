@@ -27,21 +27,40 @@ class Detector:
         self.sample_rate = int(self.extractor.sampling_rate)
 
     def score(self, audio, sample_rate):
-        import librosa
+        return self.score_many([audio], sample_rate, batch_size=1)[0]
+
+    def score_many(self, audios, sample_rate, batch_size=3):
+        """Batch equal-length windows; never pad unrelated lengths into a score."""
+        if batch_size < 1:
+            raise ValueError('Batch size must be positive')
         if sample_rate != self.sample_rate:
-            audio = librosa.resample(audio, orig_sr=sample_rate, target_sr=self.sample_rate)
-        inputs = self.extractor(audio, sampling_rate=self.sample_rate, return_tensors='pt', padding=True)
-        with self.torch.inference_mode():
-            output = self.model(**inputs)
-            score = float(self.torch.softmax(output.logits, dim=-1)[0, self.fake_index])
-        if not math.isfinite(score) or not 0 <= score <= 1:
-            raise ValueError('Model returned an invalid score')
-        return score
+            import librosa
+            audios = [librosa.resample(audio, orig_sr=sample_rate, target_sr=self.sample_rate)
+                      for audio in audios]
+        scores = []
+        start = 0
+        while start < len(audios):
+            end = start + 1
+            while end < min(start + batch_size, len(audios)) and len(audios[end]) == len(audios[start]):
+                end += 1
+            inputs = self.extractor(audios[start:end], sampling_rate=self.sample_rate,
+                                    return_tensors='pt', padding=True)
+            with self.torch.inference_mode():
+                output = self.model(**inputs)
+                values = self.torch.softmax(output.logits, dim=-1)[:, self.fake_index].tolist()
+            if len(values) != end - start or any(not math.isfinite(value) or not 0 <= value <= 1 for value in values):
+                raise ValueError('Model returned an invalid score')
+            scores.extend(values)
+            start = end
+        return scores
 
 
 class Engine:
     def __init__(self, settings, detectors=None):
         self.settings = settings
+        if detectors is None:
+            import torch
+            torch.set_num_threads(settings.cpu_threads)
         self.detectors = detectors if detectors is not None else [Detector(settings.model_id, settings.revision)]
         if detectors is None and settings.second_model:
             self.detectors.append(Detector(settings.second_model, settings.second_revision))
@@ -97,11 +116,18 @@ class Engine:
             return 'fake'
         return 'inconclusive'
 
+    def score_windows(self, detector, windows, batch_size=None):
+        batched = getattr(detector, 'score_many', None)
+        if callable(batched):
+            return batched(windows, self.settings.sample_rate,
+                           batch_size=self.settings.inference_batch_size if batch_size is None else batch_size)
+        return [detector.score(window, self.settings.sample_rate) for window in windows]
+
     def analyze(self, audio, explain=False):
         s = self.settings
         bounds = self.windows(audio)
-        by_model = [[detector.score(audio[a:b], s.sample_rate) for a, b in bounds]
-                    for detector in self.detectors]
+        windows = [audio[a:b] for a, b in bounds]
+        by_model = [self.score_windows(detector, windows) for detector in self.detectors]
         scores = np.mean(by_model, axis=0)
         aggregate = self.aggregate(scores)
         individual = [self.aggregate(values) for values in by_model]
@@ -119,12 +145,16 @@ class Engine:
                 impacts = []
                 for detector_index, detector in enumerate(self.detectors):
                     altered_scores = list(by_model[detector_index])
+                    masked_windows, changed_indices = [], []
                     for j, (left, right) in enumerate(bounds):
                         if right <= a or left >= b:
                             continue
                         masked = audio[left:right].copy()
                         masked[max(a, left) - left:min(b, right) - left] = 0
-                        altered_scores[j] = detector.score(masked, s.sample_rate)
+                        masked_windows.append(masked)
+                        changed_indices.append(j)
+                    for j, value in zip(changed_indices, self.score_windows(detector, masked_windows, batch_size=1)):
+                        altered_scores[j] = value
                     impacts.append(self.aggregate(altered_scores))
                 segment['occlusion_delta'] = round((aggregate - float(np.mean(impacts))) * 100, 2)
             segments.append(segment)

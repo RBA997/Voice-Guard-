@@ -44,3 +44,26 @@ def test_silence_abstains():
     result = Engine(Settings(), [Fixed(0.9)]).analyze(np.zeros(16000))
     assert result['decision_reason'] == 'silence'
     assert result['prediction'] == 'inconclusive'
+
+
+def test_batching_matches_serial_with_occlusion():
+    class RecordingDetector:
+        def __init__(self): self.batches=[]
+        def score(self,audio,sample_rate): return float(np.mean(np.abs(audio)))
+        def score_many(self,audios,sample_rate,batch_size):
+            self.batches.append((len(audios),batch_size))
+            return [self.score(a,sample_rate) for a in audios]
+    class SerialDetector:
+        def score(self,audio,sample_rate):return float(np.mean(np.abs(audio)))
+    audio=np.linspace(-.8,.8,11*16000,dtype=np.float32)
+    detector=RecordingDetector()
+    batched=Engine(Settings(),[detector]).analyze(audio,explain=True)
+    serial=Engine(Settings(),[SerialDetector()]).analyze(audio,explain=True)
+    assert batched==serial
+    assert detector.batches[0]==(4,3)
+    assert len(detector.batches)>1
+
+
+def test_runtime_limits_validate(monkeypatch):
+    monkeypatch.setenv('VG_CPU_THREADS','0')
+    with pytest.raises(ValueError,match='VG_CPU_THREADS'):Settings.from_env()

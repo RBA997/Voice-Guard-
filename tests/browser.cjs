@@ -11,7 +11,7 @@ const output=path.resolve('reports/browser');fs.mkdirSync(output,{recursive:true
  await page.evaluate(require('fs').readFileSync(require.resolve('axe-core'),'utf8'));
  const axe=await page.evaluate(async()=>await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}}));
  console.log('Axe violations',axe.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>n.target)})));
- const originalFooterTargets=new Set(['.footer-policy > span:nth-child(1)','span:nth-child(3)','.footer-copyright']);
+ const originalFooterTargets=new Set(['.footer-policy > span:nth-child(1)','.footer-policy > span:nth-child(3)','.footer-copyright']);
  function unexpectedFindings(violations){return violations.flatMap(v=>v.nodes.filter(n=>!(v.id==='color-contrast'&&originalFooterTargets.has(n.target.join(' ')))));}
  if(unexpectedFindings(axe.violations).length)throw Error('New accessibility violations');
  console.log('Preserved original footer contrast findings:',axe.violations.reduce((count,v)=>count+v.nodes.length,0));
@@ -28,6 +28,7 @@ const output=path.resolve('reports/browser');fs.mkdirSync(output,{recursive:true
  const predicted=data.scores.fake>data.scores.real?'fake':'real';
  if(data.model_prediction!==predicted)throw Error('Missing raw model prediction');
  if(await page.locator('#score').textContent()!==`${data.scores[predicted].toFixed(2)}%`)throw Error('Circle must show the predicted class confidence');
+ if(await page.locator('#reason').textContent()!==`The model classified this audio as ${predicted}. ${predicted==='fake'?'Fake':'Real'}-class score: ${data.scores[predicted].toFixed(2)}%.`)throw Error('Result wording must match the original style');
  if(await page.locator('[data-i18n=aiConfidence]').textContent()!=='AI CONFIDENCE')throw Error('Incorrect circle wording');
  if(await page.locator('#verdict').textContent()!==(predicted==='fake'?'FAKE AUDIO DETECTED':'REAL AUDIO DETECTED'))throw Error('Model prediction heading does not match scores');
  await page.screenshot({path:path.join(output,'desktop.png'),fullPage:true});

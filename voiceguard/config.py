@@ -20,6 +20,8 @@ class Settings:
     aggregation: str = 'mean'
     max_explain_seconds: float = 30
     sample_rate: int = 16000
+    cpu_threads: int = min(4, os.cpu_count() or 1)
+    inference_batch_size: int = 3
     frontend: Path = Path(__file__).resolve().parent.parent / 'frontend'
 
     @classmethod
@@ -34,11 +36,15 @@ class Settings:
             max_seconds=float(os.getenv('VG_MAX_SECONDS', cls.max_seconds)),
             requests_per_minute=int(os.getenv('VG_RATE_LIMIT', cls.requests_per_minute)),
             aggregation=os.getenv('VG_AGGREGATION', 'mean'),
+            cpu_threads=int(os.getenv('VG_CPU_THREADS', os.getenv('OMP_NUM_THREADS', str(cls.cpu_threads)).split(',')[0])),
+            inference_batch_size=int(os.getenv('VG_INFERENCE_BATCH_SIZE', cls.inference_batch_size)),
         )
         if not 1024 <= result.max_bytes <= 100 * 1024 * 1024:
             raise ValueError('VG_MAX_BYTES must be between 1024 and 104857600')
         if not 1 <= result.max_seconds <= 600 or result.requests_per_minute < 1:
             raise ValueError('Invalid duration or rate limit')
+        if not 1 <= result.cpu_threads <= 32 or not 1 <= result.inference_batch_size <= 8:
+            raise ValueError('VG_CPU_THREADS must be 1–32 and VG_INFERENCE_BATCH_SIZE must be 1–8')
         if result.aggregation not in {'mean', 'max'}:
             raise ValueError('VG_AGGREGATION must be mean or max')
         if result.second_model and not result.second_revision:
