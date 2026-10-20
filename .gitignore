@@ -11,3 +11,4 @@ data/*
 models/
 *.egg-info/
 node_modules/
+physical-test*/

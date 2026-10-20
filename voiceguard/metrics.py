@@ -55,10 +55,21 @@ def calibrate(labels, scores, max_error=0.05, min_per_class=20):
             'warning':'Empirical validation constraints do not guarantee future error rates.'}
 
 
-def decision_metrics(labels, scores, calibration):
+def decision_metrics(labels, scores, calibration, eligible=None):
     y, p=np.asarray(labels),np.asarray(scores)
-    real=p<=calibration['real_threshold'];fake=p>=calibration['fake_threshold'];decided=real|fake
-    return {'coverage':float(np.mean(decided)), 'inconclusive_count':int(sum(~decided)),
+    if y.ndim != 1 or y.shape != p.shape or set(y.tolist()) != {0, 1} or not np.isfinite(p).all():
+        raise ValueError('Decision metrics require matching finite scores and both labels')
+    permitted = np.ones(len(y), dtype=bool) if eligible is None else np.asarray(eligible, dtype=bool)
+    if permitted.shape != y.shape:
+        raise ValueError('Eligibility mask must match the recordings')
+    real=(p<=calibration['real_threshold'])&permitted
+    fake=(p>=calibration['fake_threshold'])&permitted;decided=real|fake
+    return {'count':len(y), 'decided_count':int(sum(decided)),
+            'coverage':float(np.mean(decided)), 'inconclusive_count':int(sum(~decided)),
             'decided_accuracy':float(np.mean(fake[decided]==y[decided])) if decided.any() else None,
             'false_fake_rate':float(np.mean(fake[y==0])),
-            'false_real_rate':float(np.mean(real[y==1]))}
+            'false_real_rate':float(np.mean(real[y==1])),
+            'speech_gate_abstentions':int(sum(~permitted)),
+            'confusion_real_fake_inconclusive':[
+                [int(sum(real&(y==label))),int(sum(fake&(y==label))),int(sum(~decided&(y==label)))]
+                for label in [0,1]]}

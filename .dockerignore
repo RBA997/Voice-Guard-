@@ -11,5 +11,12 @@ frontend.zip
 node_modules
 tests
 docs
+physical-test*/
+**/*.wav
+**/*.mp3
+**/*.m4a
+**/*.webm
+**/*.flac
+**/*.ogg
 
 .env*

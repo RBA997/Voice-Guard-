@@ -69,6 +69,9 @@ def test_profile_is_opt_in_and_invalid_names_fail(monkeypatch):
     assert Settings.from_env().head_path.endswith('assets/arabic_head.json')
     monkeypatch.setenv('VG_HEAD_PATH', '')
     assert Settings.from_env().head_path.endswith('assets/arabic_head.json')
+    monkeypatch.delenv('VG_CALIBRATION', raising=False)
+    monkeypatch.setenv('VG_PROFILE', 'experimental-arabic-calibrated')
+    assert Settings.from_env().calibration.endswith('assets/arabic_calibration.json')
     monkeypatch.setenv('VG_PROFILE', 'unknown')
     with pytest.raises(ValueError, match='VG_PROFILE'):
         Settings.from_env()

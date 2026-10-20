@@ -27,3 +27,11 @@ VG_MODEL_ID="$PWD/models/arabic" VG_MODEL_REVISION=local VG_CALIBRATION=models/a
 The first model/revision is pinned in `voiceguard/config.py`. For a locally fine-tuned checkpoint, archive its files and training manifest hashes alongside the report; The calibration identity includes a SHA-256 digest of local JSON and safetensors artifacts; a modified local checkpoint is rejected until recalibrated. Do not compare calibration from one model to another.
 
 **Honest reporting:** no labeled dataset was supplied by the user during implementation. Public ArAD inference and a separate frozen-encoder head adaptation are documented in `results/README.md` and `results/model-improvement/README.md`; these do not meet this protocol's consent and speaker-disjoint requirements. Head-only adaptation improved matched fresh-clip accuracy from 54.69% to 71.88%; this is not a full encoder fine-tuning result or proof of new-speaker performance. No completed consented Arabic study, physical re-recording result or ensemble superiority has been established. Unit-test fixtures exercise software behavior and are never research evidence. The included audio supports a functional smoke test only. A UI spectrogram alone is not explainability; the optional occlusion computation actually reruns masked overlapping windows and reports the score delta, with off-manifold masking limitations.
+
+## Experimental public calibration update
+
+A separate public-clip study has now fitted thresholds on 128 reserved validation
+clips and tested a frozen configuration on 256 fresh clips. It does not satisfy
+the consented speaker-disjoint protocol above. See [complete results and
+coverage](CALIBRATION.md) and [actual physical-capture instructions](PHYSICAL_TEST.md).
+The physical kit is prepared; no phone capture or physical result is claimed yet.

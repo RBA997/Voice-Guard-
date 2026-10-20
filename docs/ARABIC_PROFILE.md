@@ -62,3 +62,10 @@ probabilities of fraud. No production abstention thresholds were fitted.
 
 The dataset remains credited to ArAD / DeepFake-Audio-Rangers under its stated
 ODC-By-1.0 license. No source audio or extracted voice features are redistributed.
+
+## Optional fitted abstention
+
+The separate `start_calibrated_arabic.bat` launcher uses the same head with
+validation-fitted experimental thresholds. It decided only 32 of 256 fresh test
+clips (12.5% coverage); the rest were inconclusive. See [calibration evidence and
+limitations](CALIBRATION.md). The existing raw launcher remains available.

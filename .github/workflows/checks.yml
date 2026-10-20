@@ -18,7 +18,7 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - run: pip check
       - run: python -m pytest -q
-      - run: bandit -r app.py voiceguard evaluate.py robustness.py train_arabic.py public_arabic_benchmark.py compare_arabic_models.py train_public_head.py -ll
+      - run: bandit -r app.py voiceguard evaluate.py robustness.py train_arabic.py public_arabic_benchmark.py compare_arabic_models.py train_public_head.py calibrate_public_arabic.py physical_loudspeaker_test.py -ll
       - run: pip-audit --progress-spinner off
       - run: pip-audit -r requirements.txt --disable-pip --no-deps --progress-spinner off
   container:

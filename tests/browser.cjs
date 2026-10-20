@@ -44,6 +44,15 @@ const output=path.resolve('reports/browser');fs.mkdirSync(output,{recursive:true
  if(await page.locator('#reason').textContent()!==`The model classified this audio as ${predicted}. ${predicted==='fake'?'Fake':'Real'}-class score: ${data.scores[predicted].toFixed(2)}%.`)throw Error('Result wording must match the original style');
  if(await page.locator('[data-i18n=aiConfidence]').textContent()!=='AI CONFIDENCE')throw Error('Incorrect circle wording');
  if(await page.locator('#verdict').textContent()!==(predicted==='fake'?'FAKE AUDIO DETECTED':'REAL AUDIO DETECTED'))throw Error('Model prediction heading does not match scores');
+ // Software fixtures: calibrated abstention must override the raw higher class.
+ for(const [decision,expectedColor] of [['real','rgb(53, 223, 145)'],['fake','rgb(255, 69, 79)'],['inconclusive','rgb(255, 165, 0)']]){
+  await page.evaluate(({data,decision})=>render({...data,calibrated:true,prediction:decision,disagreement:false,decision_reason:'calibrated_thresholds'}),{data,decision});
+  const shown=await page.locator('#results').getAttribute('data-prediction');
+  if(shown!==decision||await page.locator('#verdict').evaluate(el=>getComputedStyle(el).color)!==expectedColor)throw Error('Calibrated decision/color was overridden by raw scores');
+ }
+ await page.evaluate(data=>render({...data,calibrated:false,disagreement:true,decision_reason:'model_disagreement'}),data);
+ if(await page.locator('#results').getAttribute('data-prediction')!=='inconclusive')throw Error('Ensemble disagreement must abstain');
+ await page.evaluate(data=>render(data),data);
  await page.screenshot({path:path.join(output,'desktop.png'),fullPage:true});
  await page.locator('#language').click();if(await page.locator('#analysis').getAttribute('dir')!=='rtl')throw Error('RTL failed');
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(output,'mobile-arabic.png'),fullPage:true});

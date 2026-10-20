@@ -6,9 +6,9 @@ All three pages of the supplied VoiceGuardAI PDF were reviewed. This checklist s
 |---|---|---|
 | Sliding-window analysis | 5-second windows, 2.5-second stride, tail coverage, mean/max aggregation, timeline | Real 10-second sample yields three windows; coverage tests pass |
 | Evaluation script | `evaluate.py`: accuracy, precision/recall/F1, confusion matrix, ROC, interpolated EER; JSON + PNG | Known-value metrics tests and random-model CLI integration pass; real benchmarks require labeled data |
-| Robustness | `robustness.py`: paired MP3 32 kbps, noise at 10/20 dB, 8 kHz channel resampling; physical re-recording manifest support | Transform/inference CLI fixture tested; real degradation and loudspeaker measurements not performed |
+| Robustness | `robustness.py`: paired MP3 32 kbps, noise at 10/20 dB, 8 kHz channel resampling; physical re-recording manifest support | Public-clip digital degradation measured; eight-clip loudspeaker kit prepared, actual phone recordings pending |
 | Arabic testing | Consent-aware manifest, language filtering, speaker-disjoint splits, per-language results and collection protocol; separate public exploration | 128 public ArAD clips scored; 62.5% diagnostic accuracy. Speaker IDs and consent records unavailable; full consented study still pending. See `docs/results/README.md` |
-| Calibrated thresholds / abstention | Validation-only calibration, empirical error constraints, matching model/window identity; explicit inconclusive result | Calibration and abstention tests pass. No fitted thresholds claimed; uncalibrated demo abstains |
+| Calibrated thresholds / abstention | Validation-only calibration, empirical error constraints, matching model/window identity; explicit inconclusive result | Experimental public-clip thresholds fitted and tested; 32/256 decisions, 29 correct, 224 inconclusive. Final consented speaker-independent thresholds remain pending |
 | Explanation | Spectrogram and window overlay; optional actual occlusion recomputation with score deltas | Real model masked-inference request passed; sensitivity is not causal attribution |
 | Second model / ensemble | Two configurable pinned safetensors models, individual scores, mean window scores, disagreement abstention | Both real models loaded and inferred; sample disagreement correctly abstained. No superiority claim |
 | Optional Arabic fine-tuning | `train_arabic.py` for consented data; separate public head-only adaptation in `train_public_head.py` | Public frozen-encoder head trained on 256 clips / 768 variants; fresh clip-level confirmation accuracy 54.69% to 71.88%. Consented full-model speaker-disjoint study still pending |
@@ -140,3 +140,30 @@ with a visible focus outline. Reduced-motion styles and live-region semantics
 were checked. English/Arabic axe checks, microphone, upload, reports, drop and
 no-speech flows passed; the three known footer contrast findings remain. These
 automated checks are not a complete manual screen-reader certification.
+
+
+## Experimental calibration and physical-test preparation — 20 October 2026
+
+This update supersedes earlier statements that no thresholds were fitted or that
+the UI always substitutes a raw prediction. The original head remains frozen;
+new public-clip calibration and fresh testing are documented in [CALIBRATION.md](CALIBRATION.md).
+The fresh diagnostic raw accuracy is 72.27%. Calibrated mode decides 32/256 clips
+(12.5% coverage), with 29 correct decisions and 224 inconclusive. Three fake clips
+were called real. This is experimental evidence, not final production validation.
+Speaker identities and individual consent records are unavailable.
+
+The UI now honors calibrated abstention and model disagreement while retaining
+its layout, circle, and red/green/orange colors. The original raw Arabic profile
+remains available; the new calibrated profile is explicitly selected.
+
+Eight physical-test clips were reserved before scoring and downloaded with exact
+waveform verification. [Windows preparation/evaluation launchers](PHYSICAL_TEST.md)
+are ready. Actual speaker/microphone recordings and their results remain pending;
+software alignment tests are not physical research outcomes.
+
+Verification: 63 Python tests passed; the final profile/configuration subset
+passed 21 tests. Browser upload, microphone, no-speech, report, mobile/RTL and
+calibrated-decision checks passed. A real-model API smoke check confirmed matching
+head/calibration identity, calibrated abstention and silence rejection. Bandit
+reported no medium/high findings for the new scripts. Latest commit CI/container
+verification is reported separately when completed.

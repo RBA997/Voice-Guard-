@@ -37,3 +37,19 @@ def test_manifest_rejects_speaker_leakage(tmp_path):
 def test_manifest_rejects_missing_consent(tmp_path):
     csv=tmp_path/'manifest.csv';csv.write_text('path,label,speaker,language,split,consent\na.wav,real,s,ar,test,false\n')
     with pytest.raises(ValueError,match='consent'):read_manifest(csv)
+
+
+def test_speech_gate_abstentions_are_not_counted_as_correct_classifications():
+    result = decision_metrics([0, 0, 1, 1], [.1, .9, .9, .1],
+                              {'real_threshold': .2, 'fake_threshold': .8},
+                              eligible=[True, False, True, False])
+    assert result['coverage'] == .5 and result['decided_count'] == 2
+    assert result['decided_accuracy'] == 1
+    assert result['speech_gate_abstentions'] == 2
+    assert result['confusion_real_fake_inconclusive'] == [[1, 0, 1], [0, 1, 1]]
+
+
+def test_all_abstained_has_no_decided_accuracy():
+    result = decision_metrics([0, 1], [.1, .9], {'real_threshold': .2, 'fake_threshold': .8},
+                              eligible=[False, False])
+    assert result['coverage'] == 0 and result['decided_accuracy'] is None
