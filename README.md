@@ -1,6 +1,6 @@
 # VoiceGuardAI
 
-An educational voice deepfake research application with an English/Arabic interface, bounded in-memory audio analysis, overlapping-window scores, spectrograms, optional occlusion analysis and model comparison. **A detector cannot prove authenticity or fraud.** Uncalibrated, silent, ambiguous and disagreeing results remain inconclusive.
+An educational voice deepfake research application with an English/Arabic interface, bounded in-memory audio analysis, overlapping-window scores, spectrograms, optional occlusion analysis and model comparison. **A detector cannot prove authenticity or fraud.** The interface shows the higher-scoring real/fake class as a model prediction. Silent or tied scores remain inconclusive. The separate calibration decision in the API/report remains inconclusive for uncalibrated, ambiguous or disagreeing results.
 
 ## Run
 
@@ -33,7 +33,7 @@ Compose uses a non-root, resource-limited container, one local port and a persis
 2. The browser checks size and duration. The server independently enforces limits, decodes the actual audio container and bounds concurrency and request rate.
 3. Analyze: 5-second windows with a 2.5-second stride, including the tail, produce a timeline and aggregate score (`mean` by default; `max` is configurable). Short recordings use one window.
 4. Optional occlusion (up to 30 seconds) replaces each interval with silence and recomputes all affected overlapping windows. Its score change is shown in the table. The spectrogram is a signal visualization, not proof of explainability or manipulation.
-5. Download a JSON report with SHA-256 of the original uploaded bytes, model identities, scores, windows, disclaimer and timestamp. The app does not retain uploads or reports. Treat hashes as potentially sensitive metadata.
+5. Download a JSON report with SHA-256 of the original uploaded bytes, model identities, scores, windows, disclaimer and timestamp. Reports keep the separate `model_prediction` (raw higher-scoring class) and `prediction` (calibration/abstention decision) fields. The app does not retain uploads or reports. Treat hashes as potentially sensitive metadata.
 
 Supported containers: WAV, MP3, FLAC, OGG, M4A, WebM. Defaults: 15 MiB, 120 seconds, six analysis requests/minute per direct peer, one inference at a time. Microphone recording needs a secure browser context (HTTPS or local development) and permission.
 

@@ -19,3 +19,5 @@
 .analysis-tools #disclaimer{font-size:14px}.analysis-tools .advice li{margin:12px 0}
 @media(max-width:650px){.analysis-tools .actions{flex-wrap:wrap}.analysis-tools .actions button{flex-basis:100%}}
 @media(prefers-reduced-motion:reduce){.analysis-tools *{animation:none!important;transition:none!important}}
+
+.analysis-tools .analysis-options{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;margin:22px 0}.analysis-tools .analysis-options .consent{margin:0}

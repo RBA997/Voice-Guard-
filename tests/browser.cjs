@@ -15,13 +15,18 @@ const output=path.resolve('reports/browser');fs.mkdirSync(output,{recursive:true
  function unexpectedFindings(violations){return violations.flatMap(v=>v.nodes.filter(n=>!(v.id==='color-contrast'&&originalFooterTargets.has(n.target.join(' ')))));}
  if(unexpectedFindings(axe.violations).length)throw Error('New accessibility violations');
  console.log('Preserved original footer contrast findings:',axe.violations.reduce((count,v)=>count+v.nodes.length,0));
+ const optionLayout=await page.evaluate(()=>{const consent=document.getElementById('consent').closest('label'),explain=document.getElementById('explain').closest('label'),options=consent.parentElement;return options.classList.contains('analysis-options')&&explain.parentElement===options&&options.nextElementSibling.id==='analyze'&&consent.getBoundingClientRect().bottom<=explain.getBoundingClientRect().top;});
+ if(!optionLayout)throw Error('Checkboxes must be stacked directly above Analyze');
  await page.getByLabel('I have permission and consent to processing this recording.').check();
  await page.locator('#file').setInputFiles(path.resolve('sampleA_short.wav'));
  await page.waitForFunction(()=>!document.getElementById('analyze').disabled);
  await page.locator('#analyze').click();await page.waitForFunction(()=>document.getElementById('status').textContent==='Analysis complete.',{timeout:120000});
  if(await page.locator('#segments tr').count()!==3)throw Error('Expected three windows');
  const downloadPromise=page.waitForEvent('download');await page.locator('#download').click();const download=await downloadPromise;
- const file=await download.path();const data=JSON.parse(fs.readFileSync(file,'utf8'));if(!data.sha256||data.prediction!=='inconclusive')throw Error('Bad report');
+ const file=await download.path();const data=JSON.parse(fs.readFileSync(file,'utf8'));if(!data.sha256||data.prediction!=='inconclusive')throw Error('Bad calibration report');
+ const predicted=data.scores.fake>data.scores.real?'fake':'real';
+ if(data.model_prediction!==predicted)throw Error('Missing raw model prediction');
+ if(await page.locator('#verdict').textContent()!==(predicted==='fake'?'FAKE AUDIO DETECTED':'REAL AUDIO DETECTED'))throw Error('Model prediction heading does not match scores');
  await page.screenshot({path:path.join(output,'desktop.png'),fullPage:true});
  await page.locator('#language').click();if(await page.locator('#analysis').getAttribute('dir')!=='rtl')throw Error('RTL failed');
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(output,'mobile-arabic.png'),fullPage:true});

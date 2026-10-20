@@ -50,3 +50,7 @@ The Docker image built successfully with TLS and APT signature verification pres
 ## Original design restoration
 
 At the user's request, the original Reaper AI header, hero, footer, PNG logo and base stylesheet were restored. New controls are scoped to the middle analysis panels, and Arabic direction applies only there. Browser checks report three existing footer contrast findings (4.2:1 versus 4.5:1); those exact legacy findings remain visible and documented because the footer must stay unchanged. New accessibility findings still fail checks. Original markup/assets are checked against frontend.zip. Earlier zero-finding screenshots describe the prior redesigned UI, not this restored version.
+
+## Model label and checkbox placement
+
+At the user's request, the main card now displays REAL AUDIO DETECTED or FAKE AUDIO DETECTED for the higher-scoring class, explicitly labeled MODEL PREDICTION. A short note explains calibration limitations or model disagreement; silence and exact ties still abstain. Downloaded reports include `model_prediction` separately from the unchanged API calibration/abstention `prediction`. Consent and optional explanation checkboxes are stacked directly above Analyze. The original header, hero and footer remain preserved.
