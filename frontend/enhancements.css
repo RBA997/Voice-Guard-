@@ -41,44 +41,30 @@ body{padding-top:var(--header-height)}
 .analysis-tools #results[data-prediction="no_speech"]{--prediction-color:#ffa500}
 
 /* Enlarge only the middle upload and results cards. */
-#analysis > :is([aria-labelledby="uploadTitle"], #results){padding:40px}
-#analysis > [aria-labelledby="uploadTitle"] :is(p,button,input,.consent){font-size:20px}
+#analysis > :is([aria-labelledby="uploadTitle"], #results){padding:32px}
+#analysis > [aria-labelledby="uploadTitle"] :is(p,button,input,.consent){font-size:16px}
 #analysis > [aria-labelledby="uploadTitle"] .section-heading h2,
-#results .section-heading h2{font-size:24px}
-#analysis > [aria-labelledby="uploadTitle"] .upload-box{min-height:260px;padding:44px 24px}
-#analysis > [aria-labelledby="uploadTitle"] .drop label{font-size:28px}
+#results .section-heading h2{font-size:18px}
+#analysis > [aria-labelledby="uploadTitle"] .upload-box{min-height:220px;padding:36px 20px}
+#analysis > [aria-labelledby="uploadTitle"] .drop label{font-size:22px}
 #analysis > [aria-labelledby="uploadTitle"] button,
-#results button{min-height:56px}
-#analysis > [aria-labelledby="uploadTitle"] #language{min-height:48px}
-#results .result-grid > *{min-width:0}
-#results .verdict-card{padding:30px}
-#results .verdict-card h2{font-size:clamp(24px,2.2vw,28px)}
-#results p,#results button{font-size:20px}
-#results .gauge-card .muted{font-size:18px}
-#results .gauge-inner span{max-width:140px}
+#results button{min-height:50px}
+#analysis > [aria-labelledby="uploadTitle"] #language{min-height:44px}
+#results .verdict-card{padding:24px}
+#results .verdict-card h2{font-size:24px}
+#results p{font-size:16px}
+#results .gauge-card .muted{font-size:15px}
 #results .gauge-inner span,
-#results .meter-labels{font-size:13px}
+#results .meter-labels,
 #analysis > [aria-labelledby="uploadTitle"] .badge,
-#results .badge{font-size:14px}
-#results h3{font-size:23px}
-#results table{font-size:20px}
-@media(min-width:1100px){
- #analysis > :is([aria-labelledby="uploadTitle"], #results){
-  --middle-panel-width:min(1200px,calc(100vw - 80px));
-  width:var(--middle-panel-width);
-  margin-inline:calc((100% - var(--middle-panel-width))/2);
- }
-}
+#results .badge{font-size:12px}
+#results h3{font-size:20px}
+#results table{font-size:16px}
 @media(max-width:650px){
- #analysis > :is([aria-labelledby="uploadTitle"], #results){padding:26px 20px}
- #analysis > [aria-labelledby="uploadTitle"] :is(p,button,input,.consent){font-size:18px}
- #analysis > [aria-labelledby="uploadTitle"] .section-heading h2,
- #results .section-heading h2{font-size:20px}
- #analysis > [aria-labelledby="uploadTitle"] .upload-box{padding:38px 14px}
- #analysis > [aria-labelledby="uploadTitle"] .drop label{font-size:24px}
- #analysis > [aria-labelledby="uploadTitle"] .drop input{font-size:16px}
- #results .verdict-card{padding:26px 18px}
- #results .verdict-card h2{font-size:24px}
- #results p,#results button,#results table{font-size:18px}
- #results .meter-labels{font-size:12px}
+ #analysis > :is([aria-labelledby="uploadTitle"], #results){padding:22px 20px}
+ #analysis > [aria-labelledby="uploadTitle"] .upload-box{padding:32px 14px}
+ #analysis > [aria-labelledby="uploadTitle"] .drop label{font-size:21px}
+ #analysis > [aria-labelledby="uploadTitle"] .drop input{font-size:14px}
+ #results .verdict-card{padding:22px 18px}
+ #results .verdict-card h2{font-size:22px}
 }
