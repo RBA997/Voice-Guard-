@@ -21,3 +21,9 @@
 @media(prefers-reduced-motion:reduce){.analysis-tools *{animation:none!important;transition:none!important}}
 
 .analysis-tools .analysis-options{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;margin:22px 0}.analysis-tools .analysis-options .consent{margin:0}
+
+/* Prediction feedback matches the original red/green result styling. */
+.analysis-tools #results{--prediction-color:#818cf8;border-top-color:var(--prediction-color)}
+.analysis-tools #results[data-prediction="fake"]{--prediction-color:#ff454f}
+.analysis-tools #results[data-prediction="real"]{--prediction-color:#35df91}
+.analysis-tools #results .verdict-card h2,.analysis-tools #results .signal{color:var(--prediction-color)}

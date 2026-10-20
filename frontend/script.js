@@ -74,11 +74,13 @@ function canvasChart(data){
 function resetResult(){
  $('reportDetails').hidden=true;$('score').textContent='--%';$('verdict').textContent=language==='ar'?'بانتظار التحليل':'AWAITING ANALYSIS';$('reason').textContent=t('noFile');drawScore(null);
 }
-function drawScore(score){
+function drawScore(score,prediction='inconclusive'){
+ const color={fake:'#ff454f',real:'#35df91',inconclusive:'#818cf8'}[prediction]||'#818cf8';
+ $('results').dataset.prediction=prediction;
  const gauge=$('scoreGauge'),ctx=gauge.getContext('2d'),center=95,radius=87;
  ctx.clearRect(0,0,190,190);ctx.lineWidth=15;ctx.strokeStyle='#263454';ctx.beginPath();ctx.arc(center,center,radius,0,Math.PI*2);ctx.stroke();
- if(score!==null){ctx.strokeStyle='#818cf8';ctx.beginPath();ctx.arc(center,center,radius,-Math.PI/2,-Math.PI/2+Math.PI*2*score/100);ctx.stroke();}
- const meter=$('scoreMeter'),m=meter.getContext('2d');m.clearRect(0,0,meter.width,meter.height);m.fillStyle='#818cf8';if(score!==null)m.fillRect(0,0,meter.width*score/100,meter.height);
+ if(score!==null){ctx.strokeStyle=color;ctx.beginPath();ctx.arc(center,center,radius,-Math.PI/2,-Math.PI/2+Math.PI*2*score/100);ctx.stroke();}
+ const meter=$('scoreMeter'),m=meter.getContext('2d');m.clearRect(0,0,meter.width,meter.height);m.fillStyle=color;if(score!==null)m.fillRect(0,0,meter.width*score/100,meter.height);
 }
 function modelPrediction(data){
  if(data.decision_reason==='silence')return 'inconclusive';
@@ -88,7 +90,7 @@ function modelPrediction(data){
 }
 function render(data){
  const predicted=modelPrediction(data);
- drawScore(data.scores.fake);
+ drawScore(data.scores.fake,predicted);
  $('reportDetails').hidden=false;$('score').textContent=`${data.scores.fake.toFixed(2)}%`;$('verdict').textContent=t(predicted);$('reason').textContent=t(predicted==='inconclusive'&&data.decision_reason!=='silence'?'tied':data.decision_reason);
  $('models').replaceChildren();data.models.forEach(m=>{const p=document.createElement('p');p.textContent=`${m.id}: ${m.fake_score.toFixed(2)}%`;p.dir='ltr';$('models').append(p);});
  $('segments').replaceChildren();data.segments.forEach(s=>{const tr=document.createElement('tr');[s.start,s.end,`${s.fake_score.toFixed(2)}%`,s.occlusion_delta==null?'—':s.occlusion_delta.toFixed(2)].forEach(v=>{const td=document.createElement('td');td.textContent=String(v);tr.append(td);});$('segments').append(tr);});
